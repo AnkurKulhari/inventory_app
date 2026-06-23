@@ -8,10 +8,14 @@ from sqlalchemy.orm import Session
 app = FastAPI()
 
 app.add_middleware(CORSMiddleware,
-                   allow_origins=["http://localhost:5173"],
-                   allow_methods=["*"],)
+                   allow_origins=["*"],
+                   allow_credentials=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"],
+                   )
 
 database_models.Base.metadata.create_all(bind=engine)
+
 
 @app.get("/")
 def greet():
@@ -25,12 +29,14 @@ products = [
     Product(id=4, name="Table", description="A wooden table", price=199.99, quantity=20),
 ]
 
+
 def get_db():
     db = session()
     try:
         yield db
     finally:
         db.close()
+
 
 def init_db():
     db = session()
@@ -40,7 +46,9 @@ def init_db():
             db.add(database_models.Product(**product.model_dump()))
         db.commit()
 
+
 init_db()
+
 
 @app.get("/products")
 def get_all_products(db: Session = Depends(get_db)):
@@ -62,6 +70,7 @@ def add_product(product: Product, db: Session = Depends(get_db)):
     db.commit()
     return product
 
+
 @app.put("/products/{id}")
 def update_product(id: int, product: Product, db: Session = Depends(get_db)):
     db_products = db.query(database_models.Product).filter(database_models.Product.id == id).first()
@@ -74,6 +83,7 @@ def update_product(id: int, product: Product, db: Session = Depends(get_db)):
         return "Product updated"
     else:
         return "Product not found"
+
 
 @app.delete("/products/{id}")
 def delete_product(id: int, db: Session = Depends(get_db)):
