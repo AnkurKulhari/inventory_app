@@ -1,0 +1,8 @@
+# Python ignores
+.venv/
+.idea/
+__pycache__/
+
+# React ignores
+frontend/node_modules/
+frontend/dist/
